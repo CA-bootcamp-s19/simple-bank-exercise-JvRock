@@ -67,8 +67,9 @@ contract SimpleBank {
     /// @return success The users enrolled status
     // Emit the appropriate event
     function enroll() public returns (bool success){
+        enrolled[msg.sender] = true;
         emit LogEnrolled(msg.sender);
-        return enrolled[msg.sender] = true;
+        return enrolled[msg.sender];
     }
 
     /// @notice Deposit ether into bank
@@ -80,6 +81,7 @@ contract SimpleBank {
     function deposit() public payable returns (uint balance) {
         /* Add the amount to the user's balance, call the event associated with a deposit,
           then return the balance of the user */
+        require(enrolled[msg.sender] == true, "User is not enrolled");
         balances[msg.sender] += msg.value;
         emit LogDepositMade(msg.sender, msg.value);
         return balances[msg.sender];
@@ -96,13 +98,12 @@ contract SimpleBank {
            to the user attempting to withdraw. 
            return the user's balance.*/
 
-        require(balances[msg.sender] >= withdrawAmount);
+        require(balances[msg.sender] >= withdrawAmount, "Not enough ether");
+        require(enrolled[msg.sender] == true, "User is not enrolled");
         balances[msg.sender] -= withdrawAmount;
         msg.sender.transfer(withdrawAmount);
         emit LogWithdrawal(msg.sender, withdrawAmount, balances[msg.sender]);
-        return balances[msg.sender];
-
-        
+        return balances[msg.sender];        
     }
 
 }
